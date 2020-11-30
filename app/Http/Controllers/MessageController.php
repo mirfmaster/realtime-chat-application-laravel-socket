@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PrivateMessageEvent;
 use App\Message;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Events\PrivateMessageEvent;
 
 class MessageController extends Controller
 {
-    public function conversation($userId) {
+    public function conversation($userId)
+    {
         $users = User::where('id', '!=', Auth::id())->get();
         $friendInfo = User::findOrFail($userId);
         $myInfo = User::find(Auth::id());
@@ -19,14 +20,15 @@ class MessageController extends Controller
         $this->data['friendInfo'] = $friendInfo;
         $this->data['myInfo'] = $myInfo;
         $this->data['users'] = $users;
-
+        // dd('sus');
         return view('message.conversation', $this->data);
     }
 
-    public function sendMessage(Request $request) {
+    public function sendMessage(Request $request)
+    {
         $request->validate([
-           'message' => 'required',
-           'receiver_id' => 'required'
+            'message' => 'required',
+            'receiver_id' => 'required',
         ]);
 
         $sender_id = Auth::id();
@@ -51,9 +53,9 @@ class MessageController extends Controller
                 event(new PrivateMessageEvent($data));
 
                 return response()->json([
-                   'data' => $data,
-                   'success' => true,
-                    'message' => 'Message sent successfully'
+                    'data' => $data,
+                    'success' => true,
+                    'message' => 'Message sent successfully',
                 ]);
             } catch (\Exception $e) {
                 $message->delete();
